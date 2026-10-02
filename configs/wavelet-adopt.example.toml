@@ -1,0 +1,60 @@
+# Portable example; paths are relative to this file.
+# Copy to configs/my-run.toml (gitignored), then set your model/dataset paths.
+[model]
+format = "official"
+root = "../models/Qwen-Image-2.1"
+device = "cuda"
+attention = "segmented"
+cpu_offload = false
+
+[dataset]
+path = "../data/train"
+caption_extension = ".txt"
+recursive = true
+max_pixels = 262144
+
+[training]
+output_dir = "../output/wavelet-adopt-example"
+cache_dir = "../cache/small"
+seed = 42
+rank = 32
+alpha = 16
+# Empty lists keep all eligible LoRA targets; exclude takes precedence.
+include_blocks = []
+exclude_blocks = []
+learning_rate = 0.0001
+lr_scheduler = "diffsynth"
+num_warmup = 0
+weight_decay = 0.01
+loss_type = "wavelet"
+loss_weighting = "diffsynth"
+optimizer = "adopt_adv"
+max_steps = 300
+gradient_accumulation_steps = 1
+num_workers = 2
+prefetch_factor = 2
+save_every = 100
+gradient_checkpointing = true
+checkpointing_offload = false
+
+[training.optimizer_params]
+cautious_wd = true
+kourkoutas_beta = true
+use_atan2 = true
+
+[wandb]
+enabled = false
+project = "qwen-image-21-trainer"
+entity = ""
+name = ""
+mode = "offline"
+
+[sample]
+enabled = false
+prompt = "a photo of a small ceramic cup on a wooden table"
+negative_prompt = ""
+width = 512
+height = 512
+steps = 30
+cfg_scale = 3.0
+seed = 42

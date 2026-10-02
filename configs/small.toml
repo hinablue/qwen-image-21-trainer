@@ -1,0 +1,49 @@
+# 所有相對路徑均相對於本 TOML 所在目錄，不是 shell 的 cwd。
+[model]
+# 官方資料夾需包含 transformer / text_encoder / vae / processor。
+# 本範例使用 official 格式；Comfy BF16 請另設 format/processor_path，見 docs/model-loading.md。
+# 量化單檔不支援。
+root = "../models/Qwen-Image-2.1"
+device = "cuda"
+# segmented 避免第一次使用 Flex 時編譯；attention mask 語義不變。
+attention = "segmented"
+# 只針對 DiT 訓練；cache/sample 不由此開啟 layer offload。
+cpu_offload = false
+
+[dataset]
+path = "../data/train"
+caption_extension = ".txt"
+recursive = true
+# 512*512 的最大面積，保留比例並對齊 32 px；不代表全部裁成正方形。
+max_pixels = 262144
+
+[training]
+output_dir = "../output/small"
+cache_dir = "../cache/small"
+seed = 42
+rank = 32
+# alpha 未設定時等於 rank；可另設 alpha = 16。
+# glob 比對原始完整 module path；空陣列保留預設 targets，exclude 優先。
+# 僅 MLP/Q 例：include_blocks = ["*mlp*", "*.attn.to_q"]
+include_blocks = []
+exclude_blocks = []
+learning_rate = 0.0001
+weight_decay = 0.01
+# 精確 optimizer update 數，不是 microsteps 或 epochs。
+max_steps = 300
+gradient_accumulation_steps = 1
+# 0 為同步；一般可改為 2（spawn CPU workers）。
+num_workers = 0
+prefetch_factor = 2
+save_every = 100
+gradient_checkpointing = true
+checkpointing_offload = false
+
+[sample]
+prompt = "a photo of a small ceramic cup on a wooden table"
+negative_prompt = ""
+width = 512
+height = 512
+steps = 30
+cfg_scale = 3.0
+seed = 42
