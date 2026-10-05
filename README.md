@@ -1,5 +1,7 @@
 # Qwen-Image 2.1 小資料集 LoRA 訓練器
 
+[正體中文](README.md) | [English](README.en.md)
+
 獨立啟動、固定版本的 **DiffSynth-Studio 訓練封裝**。不依賴 ai-toolkit、不改既有訓練器，適合先用少量圖片確認 LoRA 學習行為。
 
 - 上游固定：`modelscope/DiffSynth-Studio@974cfa37f27ac55eba3b6d10efa21f876900572d`。
