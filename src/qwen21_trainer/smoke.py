@@ -54,6 +54,7 @@ def run_smoke(output_dir, *, training_options=None):
             "exclude_blocks",
             "learning_rate",
             "weight_decay",
+            "max_grad_norm",
             "loss_type",
             "loss_weighting",
             "optimizer",

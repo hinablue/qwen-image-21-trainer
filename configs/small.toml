@@ -32,6 +32,8 @@ weight_decay = 0.01
 # 精確 optimizer update 數，不是 microsteps 或 epochs。
 max_steps = 300
 gradient_accumulation_steps = 1
+# 0.0 關閉裁剪；例如 1.0 會在梯度累積完成後裁剪全域 L2 範數。
+max_grad_norm = 0.0
 # 0 為同步；一般可改為 2（spawn CPU workers）。
 num_workers = 0
 prefetch_factor = 2

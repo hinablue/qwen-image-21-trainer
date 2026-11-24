@@ -72,6 +72,7 @@ path = "/absolute/path/to/my_small_dataset"
 - LR `1e-4`、AdamW、weight decay `0.01`。
 - `max_steps = 300`：精確 **optimizer update 數**，不是 epoch 或 microstep 數。
 - `gradient_accumulation_steps = 1`；增為 4 時，300 updates 會使用 1200 microsteps。
+- `[training].max_grad_norm = 0.0` 預設不裁剪；設為 `1.0` 等正值時，在梯度累積完成後、optimizer update 前裁剪所有可訓練參數的全域 L2 梯度範數。只接受大於或等於零的有限數值。
 - 每 100 updates 儲存；gradient checkpointing 開啟。
 - DiT／LoRA BF16；不量化。
 

@@ -47,6 +47,7 @@ _DEFAULTS: dict[str, dict[str, Any]] = {
         "optimizer_params": {},
         "max_steps": 300,
         "gradient_accumulation_steps": 1,
+        "max_grad_norm": 0.0,
         "num_workers": 0,
         "prefetch_factor": 2,
         "save_every": 100,
@@ -162,6 +163,7 @@ def _sections(raw: dict[str, Any], base: Path) -> dict[str, dict[str, Any]]:
         training["learning_rate"], "training.learning_rate", positive=True
     )
     training["weight_decay"] = _number(training["weight_decay"], "training.weight_decay")
+    training["max_grad_norm"] = _number(training["max_grad_norm"], "training.max_grad_norm")
     from .lr_schedule import normalize_lr_options
     from .training_options import normalize_training_options
 

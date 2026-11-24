@@ -72,6 +72,7 @@ Default settings for a small test run:
 - Learning rate (LR): `1e-4`, AdamW, weight decay `0.01`.
 - `max_steps = 300` means exactly **300 optimizer updates**, not epochs or microsteps.
 - `gradient_accumulation_steps = 1`; setting it to 4 uses 1200 microsteps for 300 updates.
+- `[training].max_grad_norm = 0.0` disables clipping by default. A positive value such as `1.0` clips the global L2 gradient norm across all trainable parameters after accumulation and before each optimizer update. Only finite, nonnegative numbers are accepted.
 - Checkpoints are saved every 100 updates; gradient checkpointing is enabled.
 - The diffusion transformer (DiT) and LoRA use BF16, without quantization.
 

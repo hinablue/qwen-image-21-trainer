@@ -60,6 +60,58 @@ def test_nan_fails_before_optimizer_update():
     assert model.p.item() == 1.0
 
 
+@pytest.mark.parametrize(
+    ("max_grad_norm", "expected"), [(0.0, [3.0, 4.0]), (1.0, [0.6, 0.8]), (10.0, [3.0, 4.0])]
+)
+@pytest.mark.parametrize("dtype", [torch.float32, torch.bfloat16])
+def test_global_gradient_clipping_after_accumulation(monkeypatch, max_grad_norm, expected, dtype):
+    from qwen21_trainer import optimizers
+
+    class LinearModel(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.p = torch.nn.Parameter(torch.tensor(1.0, dtype=dtype))
+            self.q = torch.nn.Parameter(torch.tensor(1.0, dtype=dtype))
+
+        def trainable_modules(self):
+            return self.parameters()
+
+        def forward(self, sample):
+            return self.p * sample[0] + self.q * sample[1]
+
+    gradients = []
+    build_optimizer = optimizers.build_optimizer
+
+    def recording_optimizer(parameters, options):
+        optimizer = build_optimizer(parameters, options)
+
+        def before_step(optimizer, args, kwargs):
+            gradients.append(torch.stack([p.grad.clone() for p in model.parameters()]))
+
+        optimizer.register_step_pre_hook(before_step)
+        return optimizer
+
+    monkeypatch.setattr(optimizers, "build_optimizer", recording_optimizer)
+    model = LinearModel()
+    optimization_loop(
+        model,
+        [torch.tensor([6.0, 0.0]), torch.tensor([0.0, 8.0])],
+        settings(max_steps=1, gradient_accumulation_steps=2, max_grad_norm=max_grad_norm),
+    )
+    torch.testing.assert_close(gradients[0], torch.tensor(expected, dtype=dtype))
+
+
+def test_nonfinite_gradient_fails_before_clipping_update():
+    class InfiniteGradientModel(ScalarModel):
+        def forward(self, sample):
+            return (self.p - 1).sqrt()
+
+    model = InfiniteGradientModel()
+    with pytest.raises(FloatingPointError, match="梯度"):
+        optimization_loop(model, [torch.tensor(1.0)], settings(max_grad_norm=1.0))
+    assert model.p.item() == 1.0
+
+
 def test_empty_samples_rejected():
     with pytest.raises(ValueError):
         optimization_loop(ScalarModel(), [], settings())

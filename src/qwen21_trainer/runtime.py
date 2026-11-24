@@ -400,6 +400,7 @@ def optimization_loop(
     updates = []
     loss_total = 0.0
     accumulation = settings["gradient_accumulation_steps"]
+    max_grad_norm = settings.get("max_grad_norm", 0.0)
     if len(samples) == 0:
         raise ValueError("沒有可訓練樣本。")
     model.train()
@@ -436,6 +437,10 @@ def optimization_loop(
                 ]
                 if finite and not torch.stack(finite).all():
                     raise FloatingPointError(f"第 {step} 步梯度包含 NaN／Inf，已停止。")
+                if max_grad_norm > 0:
+                    torch.nn.utils.clip_grad_norm_(
+                        model.trainable_modules(), max_grad_norm, error_if_nonfinite=True
+                    )
                 used_lr = optimizer.param_groups[0]["lr"]
                 optimizer.step()
                 scheduler.step()

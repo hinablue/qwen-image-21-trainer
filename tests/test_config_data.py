@@ -117,6 +117,7 @@ class ConfigTests(Fixture):
                 "optimizer_params": {},
                 "max_steps": 300,
                 "gradient_accumulation_steps": 1,
+                "max_grad_norm": 0.0,
                 "num_workers": 0,
                 "prefetch_factor": 2,
                 "save_every": 100,
@@ -179,6 +180,7 @@ class ConfigTests(Fixture):
                 "seed",
                 "learning_rate",
                 "weight_decay",
+                "max_grad_norm",
             ),
             "sample": ("width", "height", "steps", "seed", "cfg_scale"),
         }
@@ -201,6 +203,7 @@ class ConfigTests(Fixture):
         for section, key in (
             ("training", "learning_rate"),
             ("training", "weight_decay"),
+            ("training", "max_grad_norm"),
             ("sample", "cfg_scale"),
         ):
             for value in (float("nan"), float("inf"), float("-inf"), -0.01, "1.0"):
@@ -234,6 +237,12 @@ class ConfigTests(Fixture):
         )
         self.assertEqual(cfg.training["weight_decay"], 0.0)
         self.assertEqual(cfg.sample["cfg_scale"], 0.0)
+
+    def test_max_grad_norm_accepts_zero_and_positive_values(self):
+        for value in (0, 0.5, 1):
+            with self.subTest(value=value):
+                cfg = self.config({"training": {"max_grad_norm": value}})
+                self.assertEqual(cfg.to_dict()["training"]["max_grad_norm"], float(value))
 
     def test_invalid_enum_string_and_section_types(self):
         for updates in (
